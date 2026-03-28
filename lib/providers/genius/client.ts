@@ -56,6 +56,46 @@ export async function geniusFetch<T>(path: string): Promise<T> {
   throw lastError ?? new Error("Genius API request failed");
 }
 
+export async function geniusFetchEmbed(songId: string | number): Promise<string> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (attempt > 0) {
+      await sleep(RETRY_DELAY_MS * attempt);
+    }
+
+    try {
+      const res = await fetch(`https://genius.com/songs/${songId}/embed.js`, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        },
+        signal: AbortSignal.timeout(15_000),
+      });
+
+      if (res.ok) {
+        return res.text();
+      }
+
+      if (isRetryable(res.status) && attempt < MAX_RETRIES) {
+        lastError = new Error(`Genius embed error: ${res.status} ${res.statusText}`);
+        continue;
+      }
+
+      throw new Error(`Genius embed error: ${res.status} ${res.statusText}`);
+    } catch (error) {
+      if (error instanceof Error && error.name === "TimeoutError") {
+        lastError = new Error("Genius embed request timed out");
+        if (attempt < MAX_RETRIES) continue;
+        throw lastError;
+      }
+      throw error;
+    }
+  }
+
+  throw lastError ?? new Error("Genius embed request failed");
+}
+
 export async function geniusScrape(url: string): Promise<string> {
   let lastError: Error | null = null;
 
