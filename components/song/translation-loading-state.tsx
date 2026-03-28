@@ -1,20 +1,16 @@
 "use client";
 
-import type { SVGProps } from "react";
 import { useEffect, useState } from "react";
 
 const STAGES = [
   {
     label: "Detecting language",
-    Icon: LanguageIcon,
   },
   {
     label: "Building pronunciation",
-    Icon: PronunciationIcon,
   },
   {
     label: "Writing translation",
-    Icon: TranslationIcon,
     detail: "Preserving names, cadence, and emotional intent.",
   },
 ];
@@ -22,8 +18,6 @@ const STAGES = [
 export function TranslationLoadingState() {
   const [stageIndex, setStageIndex] = useState(0);
   const [stageKey, setStageKey] = useState(0);
-  const progressWidth = `${((stageIndex + 1) / STAGES.length) * 100}%`;
-  const CurrentIcon = STAGES[stageIndex].Icon;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -44,19 +38,14 @@ export function TranslationLoadingState() {
       aria-atomic="true"
     >
       <div className="room-card rounded-[24px] px-4 py-4 sm:px-5 sm:py-5">
-        <div className="overflow-hidden rounded-full bg-divider/70">
-          <div
-            className="relative h-1 rounded-full bg-accent-1 transition-[width] duration-700 ease-out"
-            style={{ width: progressWidth }}
-          >
-            <span className="animate-loading-rail absolute inset-y-0 right-0 w-14 rounded-full bg-primary/[0.35]" />
-          </div>
-        </div>
-
-        <div className="relative mt-8 min-h-[7.5rem] text-center sm:min-h-[8.5rem]">
+        <div className="relative min-h-[7.5rem] py-4 text-center sm:min-h-[8.5rem] sm:py-5">
           <div key={stageKey} className="animate-stage-fade flex flex-col items-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-accent-1/20 bg-accent-1/[0.12] text-accent-1 shadow-[0_10px_30px_rgba(214,154,75,0.12)] sm:h-16 sm:w-16">
-              <CurrentIcon className="h-7 w-7 sm:h-8 sm:w-8" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/[0.03] ring-1 ring-inset ring-white/[0.06] shadow-[0_14px_34px_rgba(0,0,0,0.26)] sm:h-20 sm:w-20">
+              <div className="relative h-9 w-9 sm:h-11 sm:w-11" aria-hidden="true">
+                <span className="absolute inset-0 rounded-full border border-white/[0.08]" />
+                <span className="absolute inset-0 rounded-full border-2 border-transparent border-t-signal border-r-signal/65 animate-spin" />
+                <span className="absolute inset-[7px] rounded-full border border-signal/16" />
+              </div>
             </div>
             <p className="mt-4 text-xl font-semibold tracking-[-0.02em] text-primary sm:text-2xl">
               {STAGES[stageIndex].label}
@@ -70,45 +59,5 @@ export function TranslationLoadingState() {
         </div>
       </div>
     </div>
-  );
-}
-
-type IconProps = SVGProps<SVGSVGElement>;
-
-function LanguageIcon(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M4 5h10" />
-      <path d="M9 3v2c0 4-2 7-5 9" />
-      <path d="M6 11c1.2 1.8 2.8 3.3 4.8 4.4" />
-      <path d="M14 19h6" />
-      <path d="M17 5l4 14" />
-      <path d="M13 19l4-14" />
-    </svg>
-  );
-}
-
-function PronunciationIcon(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M4 10v4" />
-      <path d="M8 7v10" />
-      <path d="M12 5v14" />
-      <path d="M16 8v8" />
-      <path d="M20 10v4" />
-    </svg>
-  );
-}
-
-function TranslationIcon(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M6 4h8" />
-      <path d="M10 4v2c0 4-1.8 7.3-5.5 10" />
-      <path d="M4 12c1.8 0 4.1-.7 6.3-2" />
-      <path d="M14 10h6" />
-      <path d="M17 7v10" />
-      <path d="M14.5 15h5" />
-    </svg>
   );
 }

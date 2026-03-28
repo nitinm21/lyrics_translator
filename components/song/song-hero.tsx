@@ -69,8 +69,8 @@ function TranslationBadge({
   switch (state.state) {
     case "pending":
       return (
-        <span className="inline-flex items-center gap-2 rounded-full bg-accent-1/[0.12] px-2.5 py-0.5 text-[11px] font-medium text-accent-1 ring-1 ring-inset ring-accent-1/20 sm:px-3 sm:py-1 sm:text-xs">
-          <span className="inline-flex h-3 items-end gap-0.5 text-accent-1/80" aria-hidden="true">
+        <span className="inline-flex items-center gap-2 rounded-full bg-signal/[0.14] px-2.5 py-0.5 text-[11px] font-medium text-signal ring-1 ring-inset ring-signal/20 sm:px-3 sm:py-1 sm:text-xs">
+          <span className="inline-flex h-3 items-end gap-0.5 text-signal/80" aria-hidden="true">
             <span className="animate-wait-bar h-1.5 w-0.5 rounded-full bg-current" />
             <span
               className="animate-wait-bar h-2.5 w-0.5 rounded-full bg-current"
