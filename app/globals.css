@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #F4EEE3;
+  --color-surface: #FFF9F1;
+  --color-primary: #161412;
+  --color-secondary: #5E564E;
+  --color-accent-1: #C65A1E;
+  --color-accent-2: #1F4E8C;
+  --color-divider: rgba(22, 20, 18, 0.12);
+
+  --font-sans: "Geist", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+}
+
+html {
+  background-color: var(--color-background);
+  color: var(--color-primary);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out both;
+}
+
+/* Shimmer effect for premium skeleton loading */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(22, 20, 18, 0.06) 0%,
+    rgba(22, 20, 18, 0.12) 40%,
+    rgba(22, 20, 18, 0.06) 80%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* Content reveal for loading → ready transition */
+@keyframes content-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-content-reveal {
+  animation: content-reveal 0.5s ease-out both;
+}
+
+/* Stanza reveal with stagger support */
+@keyframes stanza-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-stanza-reveal {
+  animation: stanza-reveal 0.4s ease-out both;
+}
+
+/* Gentle stage text crossfade */
+@keyframes stage-fade {
+  0% { opacity: 0; transform: translateY(4px); }
+  15% { opacity: 1; transform: translateY(0); }
+  85% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+
+.animate-stage-fade {
+  animation: stage-fade 3s ease-in-out both;
+}
+
+/* Pulse glow for active progress segment */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes wait-bar {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scaleY(0.55);
+  }
+  45% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+.animate-wait-bar {
+  animation: wait-bar 1s ease-in-out infinite;
+  transform-origin: center bottom;
+}
