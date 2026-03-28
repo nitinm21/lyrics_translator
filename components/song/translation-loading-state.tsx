@@ -1,105 +1,114 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import type { SVGProps } from "react";
+import { useEffect, useState } from "react";
 
 const STAGES = [
-  { label: "Detecting language", detail: "Analyzing the lyrics" },
-  { label: "Building transliteration", detail: "Creating pronunciation guide" },
-  { label: "Translating lyrics", detail: "Crafting English translation" },
+  {
+    label: "Detecting language",
+    Icon: LanguageIcon,
+  },
+  {
+    label: "Building pronunciation",
+    Icon: PronunciationIcon,
+  },
+  {
+    label: "Writing translation",
+    Icon: TranslationIcon,
+    detail: "Preserving names, cadence, and emotional intent.",
+  },
 ];
-
-// Pre-generate stable widths so they don't shift on re-render
-function useSkeletonWidths() {
-  return useMemo(() => {
-    const stanzas = [4, 3, 4]; // lines per stanza
-    return stanzas.map((lineCount) =>
-      Array.from({ length: lineCount }, (_, j) => ({
-        translit: 30 + ((j * 17 + 11) % 30), // 30-60%
-        translation: 45 + ((j * 23 + 7) % 45), // 45-90%
-      }))
-    );
-  }, []);
-}
 
 export function TranslationLoadingState() {
   const [stageIndex, setStageIndex] = useState(0);
   const [stageKey, setStageKey] = useState(0);
-  const skeletonWidths = useSkeletonWidths();
+  const progressWidth = `${((stageIndex + 1) / STAGES.length) * 100}%`;
+  const CurrentIcon = STAGES[stageIndex].Icon;
 
   useEffect(() => {
     const interval = setInterval(() => {
       setStageIndex((i) => {
-        const next = Math.min(i + 1, STAGES.length - 1);
-        if (next !== i) setStageKey((k) => k + 1);
+        const next = (i + 1) % STAGES.length;
+        setStageKey((k) => k + 1);
         return next;
       });
-    }, 3000);
+    }, 2400);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="mx-auto max-w-md py-12 text-center sm:py-16">
-      {/* Progress indicator */}
-      <div className="mb-6 flex justify-center gap-2 sm:mb-8">
-        {STAGES.map((_, i) => (
+    <div
+      className="mx-auto max-w-2xl pb-6 sm:pb-8"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <div className="rounded-2xl border border-divider/60 bg-surface/50 px-4 py-4 sm:px-5 sm:py-5">
+        <div className="overflow-hidden rounded-full bg-divider/70">
           <div
-            key={i}
-            className={`h-1 rounded-full transition-all duration-700 ease-out ${
-              i < stageIndex
-                ? "w-10 bg-accent-1"
-                : i === stageIndex
-                  ? "w-10 bg-accent-1 animate-pulse-glow"
-                  : "w-6 bg-divider"
-            }`}
-          />
-        ))}
-      </div>
+            className="relative h-1 rounded-full bg-accent-1 transition-[width] duration-700 ease-out"
+            style={{ width: progressWidth }}
+          >
+            <span className="animate-loading-rail absolute inset-y-0 right-0 w-14 rounded-full bg-white/45" />
+          </div>
+        </div>
 
-      {/* Current stage with crossfade */}
-      <div className="relative h-14">
-        <div key={stageKey} className="animate-stage-fade">
-          <p className="text-base font-medium text-primary sm:text-lg">
-            {STAGES[stageIndex].label}
-          </p>
-          <p className="mt-1 text-sm text-secondary">
-            {STAGES[stageIndex].detail}
-          </p>
+        <div className="relative mt-8 min-h-[7.5rem] text-center sm:min-h-[8.5rem]">
+          <div key={stageKey} className="animate-stage-fade flex flex-col items-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-accent-1/20 bg-accent-1/10 text-accent-1 sm:h-16 sm:w-16">
+              <CurrentIcon className="h-7 w-7 sm:h-8 sm:w-8" />
+            </div>
+            <p className="mt-4 text-xl font-semibold tracking-[-0.02em] text-primary sm:text-2xl">
+              {STAGES[stageIndex].label}
+            </p>
+            {STAGES[stageIndex].detail ? (
+              <p className="mt-2 max-w-md text-sm leading-relaxed text-secondary">
+                {STAGES[stageIndex].detail}
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
-
-      {/* Skeleton preview — mimics actual LyricsReader layout */}
-      <div className="mt-10 space-y-8 text-left sm:mt-12">
-        {skeletonWidths.map((lines, i) => (
-          <div
-            key={i}
-            className="space-y-4"
-            style={{ animationDelay: `${i * 150}ms` }}
-          >
-            {/* Section label skeleton for first stanza */}
-            {i === 0 && (
-              <div className="mb-2 h-2.5 w-16 animate-shimmer rounded" />
-            )}
-
-            {lines.map((widths, j) => (
-              <div key={j} className="space-y-1">
-                {/* Translation line skeleton (larger, like 22-26px text) */}
-                <div
-                  className="h-5 animate-shimmer rounded sm:h-6"
-                  style={{ width: `${widths.translation}%` }}
-                />
-                {/* Transliteration line skeleton (smaller, like 15-16px text) */}
-                <div
-                  className="h-3 animate-shimmer rounded"
-                  style={{
-                    width: `${widths.translit}%`,
-                    animationDelay: "0.15s",
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
     </div>
+  );
+}
+
+type IconProps = SVGProps<SVGSVGElement>;
+
+function LanguageIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M4 5h10" />
+      <path d="M9 3v2c0 4-2 7-5 9" />
+      <path d="M6 11c1.2 1.8 2.8 3.3 4.8 4.4" />
+      <path d="M14 19h6" />
+      <path d="M17 5l4 14" />
+      <path d="M13 19l4-14" />
+    </svg>
+  );
+}
+
+function PronunciationIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M4 10v4" />
+      <path d="M8 7v10" />
+      <path d="M12 5v14" />
+      <path d="M16 8v8" />
+      <path d="M20 10v4" />
+    </svg>
+  );
+}
+
+function TranslationIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M6 4h8" />
+      <path d="M10 4v2c0 4-1.8 7.3-5.5 10" />
+      <path d="M4 12c1.8 0 4.1-.7 6.3-2" />
+      <path d="M14 10h6" />
+      <path d="M17 7v10" />
+      <path d="M14.5 15h5" />
+    </svg>
   );
 }

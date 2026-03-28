@@ -18,13 +18,13 @@ export function LyricsReader({ stanzas, translationStanzas }: Props) {
   }
 
   return (
-    <div className="animate-content-reveal mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl">
       <div className="space-y-8 sm:space-y-12">
         {stanzas.map((stanza, stanzaIdx) => (
           <div
             key={stanza.stanzaId}
             className="animate-stanza-reveal"
-            style={{ animationDelay: `${stanzaIdx * 80}ms` }}
+            style={{ animationDelay: `${160 + stanzaIdx * 90}ms` }}
           >
             {stanza.sectionLabel && (
               <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary/40 sm:mb-5">
@@ -56,13 +56,6 @@ export function LyricsReader({ stanzas, translationStanzas }: Props) {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Footer */}
-      <div className="mt-10 border-t border-divider pt-4 sm:mt-14">
-        <p className="text-[11px] text-secondary/40 italic">
-          AI-translated · Meaning may not perfectly capture every nuance of the original
-        </p>
       </div>
     </div>
   );

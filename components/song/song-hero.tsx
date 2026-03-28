@@ -6,36 +6,12 @@ type Props = {
   translationState?: TranslationState;
 };
 
-const LANGUAGE_NAMES: Record<string, string> = {
-  en: "English",
-  hi: "Hindi",
-  pa: "Punjabi",
-  bn: "Bengali",
-  ta: "Tamil",
-  te: "Telugu",
-  kn: "Kannada",
-  ml: "Malayalam",
-  ja: "Japanese",
-  ko: "Korean",
-  ar: "Arabic",
-  he: "Hebrew",
-  ru: "Russian",
-  zh: "Chinese",
-  th: "Thai",
-  es: "Spanish",
-  fr: "French",
-  de: "German",
-  pt: "Portuguese",
-  it: "Italian",
-  mixed: "Mixed Language",
-  unknown: "Unknown",
-};
-
-function getLanguageLabel(code: string): string {
-  return LANGUAGE_NAMES[code] || code.toUpperCase();
-}
-
 export function SongHero({ song, translationState }: Props) {
+  const showStatusRow =
+    song.isEnglish ||
+    translationState?.state === "pending" ||
+    translationState?.state === "error";
+
   return (
     <div className="flex items-start gap-4 sm:gap-6 md:gap-8">
       {song.albumArtUrl ? (
@@ -63,15 +39,11 @@ export function SongHero({ song, translationState }: Props) {
         <p className="mt-1.5 text-base tracking-[-0.015em] text-secondary sm:mt-2 sm:text-lg md:text-xl">
           {song.artist}
         </p>
-        <div className="mt-2.5 flex flex-wrap items-center gap-1.5 sm:mt-3 sm:gap-2">
-          {!song.isEnglish && (
-            <span className="inline-flex items-center rounded-full bg-accent-2/10 px-2.5 py-0.5 text-[11px] font-medium text-accent-2 sm:px-3 sm:py-1 sm:text-xs">
-              {getLanguageLabel(song.sourceLanguage)}
-            </span>
-          )}
-          <TranslationBadge state={translationState} isEnglish={song.isEnglish} />
-          <span className="text-[11px] text-secondary/50 sm:text-xs">via Genius</span>
-        </div>
+        {showStatusRow ? (
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5 sm:mt-3 sm:gap-2">
+            <TranslationBadge state={translationState} isEnglish={song.isEnglish} />
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -113,11 +85,7 @@ function TranslationBadge({
         </span>
       );
     case "ready":
-      return (
-        <span className="inline-flex items-center rounded-full bg-green-800/10 px-2.5 py-0.5 text-[11px] font-medium text-green-800 sm:px-3 sm:py-1 sm:text-xs">
-          Translation ready
-        </span>
-      );
+      return null;
     case "error":
       return (
         <span className="inline-flex items-center rounded-full bg-red-800/10 px-2.5 py-0.5 text-[11px] font-medium text-red-800 sm:px-3 sm:py-1 sm:text-xs">

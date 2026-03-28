@@ -9,9 +9,16 @@ type Props = {
   loading: boolean;
   error: string | null;
   searched: boolean;
+  onResultSelect?: (result: SearchResult) => void;
 };
 
-export function SearchResults({ results, loading, error, searched }: Props) {
+export function SearchResults({
+  results,
+  loading,
+  error,
+  searched,
+  onResultSelect,
+}: Props) {
   if (loading) return <SearchSkeletons />;
 
   if (error) {
@@ -43,6 +50,7 @@ export function SearchResults({ results, loading, error, searched }: Props) {
         >
           <Link
             href={`/song/${result.songId}`}
+            onClick={() => onResultSelect?.(result)}
             className="flex items-center gap-3 rounded-xl border border-divider bg-surface px-3 py-3 transition-all hover:shadow-md hover:border-accent-1/20 active:scale-[0.99] sm:gap-4 sm:px-4"
           >
             {result.albumArtUrl ? (

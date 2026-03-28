@@ -8,7 +8,7 @@ export default function HomePage() {
           Lyrics Translator
         </h1>
         <p className="mt-3 text-base text-secondary sm:mt-4 sm:text-lg md:text-xl">
-          Search for a song. Read the lyrics. Understand every word.
+          Understand what your favorite songs are really saying.
         </p>
         <div className="mt-8 sm:mt-10">
           <SearchShell />

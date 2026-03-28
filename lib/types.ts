@@ -44,6 +44,11 @@ export type SearchResult = {
   provider: "genius";
 };
 
+export type RecentSearch = SearchResult & {
+  query: string;
+  visitedAt: string;
+};
+
 // ---------------------------------------------------------------------------
 // Translation state — returned by /api/song/[songId]/translate
 // ---------------------------------------------------------------------------

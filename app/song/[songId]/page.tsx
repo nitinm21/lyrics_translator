@@ -102,7 +102,7 @@ export default function SongPage() {
                   translationStanzas={translationState.stanzas}
                 />
               ) : translationState?.state === "pending" ? (
-                /* Translation loading — prominent, centered */
+                /* Translation loading — compact status rail with live copy */
                 <TranslationLoadingState />
               ) : translationState?.state === "error" ? (
                 /* Translation error */
