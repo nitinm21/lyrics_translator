@@ -58,7 +58,7 @@ function TranslationBadge({
 }) {
   if (isEnglish) {
     return (
-      <span className="inline-flex items-center rounded-full bg-primary/5 px-2.5 py-0.5 text-[11px] font-medium text-secondary sm:px-3 sm:py-1 sm:text-xs">
+      <span className="inline-flex items-center rounded-full bg-primary/[0.06] px-2.5 py-0.5 text-[11px] font-medium text-secondary ring-1 ring-inset ring-white/[0.08] sm:px-3 sm:py-1 sm:text-xs">
         Original English lyrics
       </span>
     );
@@ -69,7 +69,7 @@ function TranslationBadge({
   switch (state.state) {
     case "pending":
       return (
-        <span className="inline-flex items-center gap-2 rounded-full bg-accent-1/10 px-2.5 py-0.5 text-[11px] font-medium text-accent-1 sm:px-3 sm:py-1 sm:text-xs">
+        <span className="inline-flex items-center gap-2 rounded-full bg-accent-1/[0.12] px-2.5 py-0.5 text-[11px] font-medium text-accent-1 ring-1 ring-inset ring-accent-1/20 sm:px-3 sm:py-1 sm:text-xs">
           <span className="inline-flex h-3 items-end gap-0.5 text-accent-1/80" aria-hidden="true">
             <span className="animate-wait-bar h-1.5 w-0.5 rounded-full bg-current" />
             <span
@@ -88,7 +88,7 @@ function TranslationBadge({
       return null;
     case "error":
       return (
-        <span className="inline-flex items-center rounded-full bg-red-800/10 px-2.5 py-0.5 text-[11px] font-medium text-red-800 sm:px-3 sm:py-1 sm:text-xs">
+        <span className="inline-flex items-center rounded-full bg-red-400/10 px-2.5 py-0.5 text-[11px] font-medium text-red-200 ring-1 ring-inset ring-red-400/20 sm:px-3 sm:py-1 sm:text-xs">
           Translation failed
         </span>
       );

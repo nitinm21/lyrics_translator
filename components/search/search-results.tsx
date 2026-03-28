@@ -23,7 +23,7 @@ export function SearchResults({
 
   if (error) {
     return (
-      <div className="rounded-xl border border-accent-1/20 bg-surface px-5 py-4 text-sm text-accent-1">
+      <div className="room-card rounded-[22px] px-5 py-4 text-sm text-accent-1">
         {error}
       </div>
     );
@@ -51,7 +51,7 @@ export function SearchResults({
           <Link
             href={`/song/${result.songId}`}
             onClick={() => onResultSelect?.(result)}
-            className="flex items-center gap-3 rounded-xl border border-divider bg-surface px-3 py-3 transition-all hover:shadow-md hover:border-accent-1/20 active:scale-[0.99] sm:gap-4 sm:px-4"
+            className="room-card room-card-interactive flex items-center gap-3 rounded-[22px] px-3 py-3 active:scale-[0.99] sm:gap-4 sm:px-4"
           >
             {result.albumArtUrl ? (
               <Image
@@ -85,7 +85,7 @@ function SearchSkeletons() {
       {Array.from({ length: 5 }).map((_, i) => (
         <li
           key={i}
-          className="flex items-center gap-3 rounded-xl border border-divider bg-surface px-3 py-3 sm:gap-4 sm:px-4"
+          className="room-card flex items-center gap-3 rounded-[22px] px-3 py-3 sm:gap-4 sm:px-4"
         >
           <div className="h-14 w-14 shrink-0 animate-pulse rounded-lg bg-divider" />
           <div className="flex-1 space-y-2">

@@ -12,16 +12,16 @@ export function RecentSearches({ searches, onSelect }: Props) {
   if (searches.length === 0) return null;
 
   return (
-    <div className="absolute top-full right-0 left-0 z-20 mt-3 overflow-hidden rounded-2xl border border-divider bg-surface/98 shadow-[0_20px_60px_rgba(22,20,18,0.08)] backdrop-blur-sm">
+    <div className="room-dropdown absolute top-full right-0 left-0 z-20 mt-3 overflow-hidden rounded-[24px]">
       <ul className="p-2 sm:p-3">
         {searches.map((search) => (
           <li key={search.songId}>
             <Link
               href={`/song/${search.songId}`}
               onClick={onSelect}
-              className="flex items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-background/80"
+              className="flex items-center gap-3 rounded-[18px] px-3 py-3 text-left transition-colors hover:bg-white/[0.04]"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-secondary">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background/[0.8] text-secondary ring-1 ring-inset ring-white/[0.06]">
                 <HistoryIcon />
               </span>
               <span className="min-w-0 flex-1 text-left">

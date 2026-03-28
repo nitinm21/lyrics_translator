@@ -119,7 +119,7 @@ export function SearchShell() {
             }
           }}
           placeholder="Search for a song or artist..."
-          className="w-full rounded-xl border border-divider bg-surface px-4 py-3.5 text-base text-primary placeholder:text-secondary/60 shadow-sm transition-shadow focus:outline-none focus:ring-2 focus:ring-accent-1/30 sm:px-5 sm:py-4 sm:text-lg"
+          className="room-input w-full rounded-[20px] px-4 py-3.5 text-base text-primary placeholder:text-secondary/60 transition-shadow focus:outline-none sm:px-5 sm:py-4 sm:text-lg"
         />
         {showRecentSearches ? (
           <RecentSearches

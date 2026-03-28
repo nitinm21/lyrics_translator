@@ -64,56 +64,58 @@ export default function SongPage() {
 
   return (
     <main className="min-h-screen px-4 py-6 sm:px-6 sm:py-8 md:px-10 md:py-12">
-      <div className="mx-auto max-w-4xl">
-        <Link
-          href="/"
-          className="mb-6 inline-flex items-center gap-1 text-sm text-secondary transition-colors hover:text-accent-1 sm:mb-8"
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M10 12L6 8l4-4" />
-          </svg>
-          Back to search
-        </Link>
+      <div className="mx-auto max-w-5xl">
+        <div className="page-shell room-panel rounded-[32px] px-5 py-6 sm:px-8 sm:py-8 md:px-10 md:py-10">
+          <Link
+            href="/"
+            className="mb-6 inline-flex items-center gap-1 text-sm text-secondary transition-colors hover:text-accent-1 sm:mb-8"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M10 12L6 8l4-4" />
+            </svg>
+            Back to search
+          </Link>
 
-        {loading && <SongSkeleton />}
-        {error && (
-          <div className="rounded-xl border border-accent-1/20 bg-surface px-4 py-3 text-sm text-accent-1 sm:px-5 sm:py-4">
-            {error}
-          </div>
-        )}
-        {song && (
-          <div className="animate-fade-in-up">
-            <SongHero song={song} translationState={translationState} />
-
-            <div className="mt-8 sm:mt-10">
-              {song.stanzas.length === 0 ? (
-                <div className="py-8 text-center text-secondary">
-                  No lyrics available for this song.
-                </div>
-              ) : song.isEnglish ? (
-                /* English songs: show original lyrics directly */
-                <div className="animate-content-reveal">
-                  <OriginalLyricsPane stanzas={song.stanzas} />
-                </div>
-              ) : translationState?.state === "ready" ? (
-                /* Translation ready: single pane with transliteration + translation */
-                <LyricsReader
-                  stanzas={song.stanzas}
-                  translationStanzas={translationState.stanzas}
-                />
-              ) : translationState?.state === "pending" ? (
-                /* Translation loading — compact status rail with live copy */
-                <TranslationLoadingState />
-              ) : translationState?.state === "error" ? (
-                /* Translation error */
-                <TranslationError
-                  message={translationState.message}
-                  onRetry={handleRetry}
-                />
-              ) : null}
+          {loading && <SongSkeleton />}
+          {error && (
+            <div className="room-card rounded-[22px] px-4 py-3 text-sm text-accent-1 sm:px-5 sm:py-4">
+              {error}
             </div>
-          </div>
-        )}
+          )}
+          {song && (
+            <div className="animate-fade-in-up">
+              <SongHero song={song} translationState={translationState} />
+
+              <div className="mt-8 sm:mt-10">
+                {song.stanzas.length === 0 ? (
+                  <div className="py-8 text-center text-secondary">
+                    No lyrics available for this song.
+                  </div>
+                ) : song.isEnglish ? (
+                  /* English songs: show original lyrics directly */
+                  <div className="animate-content-reveal">
+                    <OriginalLyricsPane stanzas={song.stanzas} />
+                  </div>
+                ) : translationState?.state === "ready" ? (
+                  /* Translation ready: single pane with transliteration + translation */
+                  <LyricsReader
+                    stanzas={song.stanzas}
+                    translationStanzas={translationState.stanzas}
+                  />
+                ) : translationState?.state === "pending" ? (
+                  /* Translation loading — compact status rail with live copy */
+                  <TranslationLoadingState />
+                ) : translationState?.state === "error" ? (
+                  /* Translation error */
+                  <TranslationError
+                    message={translationState.message}
+                    onRetry={handleRetry}
+                  />
+                ) : null}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );
@@ -128,11 +130,11 @@ function TranslationError({
 }) {
   return (
     <div className="animate-content-reveal mx-auto max-w-md py-8 text-center sm:py-12">
-      <div className="rounded-xl border border-accent-1/20 bg-surface px-5 py-6 sm:px-6 sm:py-8">
+      <div className="room-card rounded-[24px] px-5 py-6 sm:px-6 sm:py-8">
         <p className="text-base text-accent-1">{message}</p>
         <button
           onClick={onRetry}
-          className="mt-4 rounded-lg bg-accent-1 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-1/90 active:scale-[0.98]"
+          className="mt-4 rounded-lg bg-accent-1 px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-accent-1/90 active:scale-[0.98]"
         >
           Retry translation
         </button>

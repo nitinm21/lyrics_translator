@@ -43,19 +43,19 @@ export function TranslationLoadingState() {
       aria-live="polite"
       aria-atomic="true"
     >
-      <div className="rounded-2xl border border-divider/60 bg-surface/50 px-4 py-4 sm:px-5 sm:py-5">
+      <div className="room-card rounded-[24px] px-4 py-4 sm:px-5 sm:py-5">
         <div className="overflow-hidden rounded-full bg-divider/70">
           <div
             className="relative h-1 rounded-full bg-accent-1 transition-[width] duration-700 ease-out"
             style={{ width: progressWidth }}
           >
-            <span className="animate-loading-rail absolute inset-y-0 right-0 w-14 rounded-full bg-white/45" />
+            <span className="animate-loading-rail absolute inset-y-0 right-0 w-14 rounded-full bg-primary/[0.35]" />
           </div>
         </div>
 
         <div className="relative mt-8 min-h-[7.5rem] text-center sm:min-h-[8.5rem]">
           <div key={stageKey} className="animate-stage-fade flex flex-col items-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-accent-1/20 bg-accent-1/10 text-accent-1 sm:h-16 sm:w-16">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-accent-1/20 bg-accent-1/[0.12] text-accent-1 shadow-[0_10px_30px_rgba(214,154,75,0.12)] sm:h-16 sm:w-16">
               <CurrentIcon className="h-7 w-7 sm:h-8 sm:w-8" />
             </div>
             <p className="mt-4 text-xl font-semibold tracking-[-0.02em] text-primary sm:text-2xl">
