@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGeniusSong } from "@/lib/providers/genius/song";
-import { getCachedSong, cacheSong } from "@/lib/song-cache";
+import { getGeniusSongMetadata } from "@/lib/providers/genius/song";
+import { trackSongOpen } from "@/lib/analytics";
 
 type RouteContext = { params: Promise<{ songId: string }> };
 
@@ -8,11 +8,8 @@ export async function GET(_request: NextRequest, context: RouteContext) {
   const { songId } = await context.params;
 
   try {
-    const cached = getCachedSong(songId);
-    if (cached) return NextResponse.json(cached);
-
-    const song = await getGeniusSong(songId);
-    cacheSong(song);
+    const song = await getGeniusSongMetadata(songId);
+    trackSongOpen(songId, song.title, song.artist);
     return NextResponse.json(song);
   } catch (error) {
     console.error("Song fetch error:", error);

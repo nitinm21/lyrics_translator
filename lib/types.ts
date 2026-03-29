@@ -32,6 +32,16 @@ export type SongDocument = {
   stanzas: Stanza[];
 };
 
+/** Song metadata returned before lyrics are normalized into a document. */
+export type SongMetadata = {
+  songId: string;
+  provider: "genius";
+  title: string;
+  artist: string;
+  albumArtUrl: string | null;
+  sourceLanguage?: string;
+};
+
 // ---------------------------------------------------------------------------
 // Search
 // ---------------------------------------------------------------------------

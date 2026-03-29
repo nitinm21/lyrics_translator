@@ -7,7 +7,9 @@ import { SongHero } from "@/components/song/song-hero";
 import { LyricsReader } from "@/components/song/lyrics-reader";
 import { OriginalLyricsPane } from "@/components/song/original-lyrics-pane";
 import { TranslationLoadingState } from "@/components/song/translation-loading-state";
-import type { SongDocument, TranslationState } from "@/lib/types";
+import { extractLyricsFromEmbedScript } from "@/lib/providers/genius/embed";
+import { buildSongDocument } from "@/lib/song-document";
+import type { SongDocument, SongMetadata, TranslationState } from "@/lib/types";
 
 export default function SongPage() {
   const { songId } = useParams<{ songId: string }>();
@@ -18,46 +20,75 @@ export default function SongPage() {
 
   // Fetch song
   useEffect(() => {
+    let cancelled = false;
+
     async function loadSong() {
       setLoading(true);
       setError(null);
+      setSong(null);
+      setTranslationState(undefined);
+
       try {
-        const res = await fetch(`/api/song/${songId}`);
-        if (!res.ok) throw new Error("Failed to load song");
-        const data: SongDocument = await res.json();
-        setSong(data);
+        const nextSong = await fetchSongDocument(songId);
+
+        if (cancelled) return;
+
+        setSong(nextSong);
+        if (nextSong.isEnglish) {
+          setTranslationState({ state: "not_needed", sourceLanguage: "en" });
+        }
       } catch {
-        setError("Failed to load song. Please try again.");
+        if (!cancelled) {
+          setError("Failed to load song. Please try again.");
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
+
     loadSong();
+
+    return () => {
+      cancelled = true;
+    };
   }, [songId]);
 
   // Fetch translation immediately after song loads (non-English)
   useEffect(() => {
     if (!song || song.isEnglish) return;
+    const currentSong: SongDocument = song;
 
+    let cancelled = false;
     setTranslationState({ state: "pending" });
 
     async function loadTranslation() {
       try {
-        const res = await fetch(`/api/song/${songId}/translate`);
-        const data: TranslationState = await res.json();
-        setTranslationState(data);
+        const data = await requestTranslation(songId, currentSong);
+        if (!cancelled) {
+          setTranslationState(data);
+        }
       } catch {
-        setTranslationState({ state: "error", message: "Translation failed." });
+        if (!cancelled) {
+          setTranslationState({ state: "error", message: "Translation failed." });
+        }
       }
     }
+
     loadTranslation();
+
+    return () => {
+      cancelled = true;
+    };
   }, [song, songId]);
 
   const handleRetry = useCallback(() => {
     if (!song) return;
+    const currentSong: SongDocument = song;
+
     setTranslationState({ state: "pending" });
-    fetch(`/api/song/${songId}/translate`)
-      .then((res) => res.json())
+    requestTranslation(songId, currentSong)
       .then((data: TranslationState) => setTranslationState(data))
       .catch(() => setTranslationState({ state: "error", message: "Translation failed." }));
   }, [song, songId]);
@@ -78,7 +109,7 @@ export default function SongPage() {
 
           {loading && <SongSkeleton />}
           {error && (
-            <div className="room-card rounded-[22px] px-4 py-3 text-sm text-accent-1 sm:px-5 sm:py-4">
+            <div className="room-card rounded-[22px] px-4 py-3 text-sm text-accent-1 sm:px-5 sm:py-4" role="alert">
               {error}
             </div>
           )}
@@ -121,6 +152,43 @@ export default function SongPage() {
   );
 }
 
+async function fetchSongDocument(songId: string): Promise<SongDocument> {
+  const metadataRes = await fetch(`/api/song/${songId}`);
+  if (!metadataRes.ok) {
+    throw new Error("Failed to load song metadata");
+  }
+
+  const metadata: SongMetadata = await metadataRes.json();
+  const embedRes = await fetch(`https://genius.com/songs/${songId}/embed.js`);
+  if (!embedRes.ok) {
+    throw new Error("Failed to load lyrics");
+  }
+
+  const embedScript = await embedRes.text();
+  const rawLyrics = extractLyricsFromEmbedScript(embedScript);
+  return buildSongDocument(metadata, rawLyrics);
+}
+
+async function requestTranslation(
+  songId: string,
+  song: SongDocument
+): Promise<TranslationState> {
+  const res = await fetch(`/api/song/${songId}/translate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ song }),
+  });
+
+  const data: TranslationState = await res.json();
+  if (!res.ok && data.state !== "error") {
+    throw new Error("Translation failed.");
+  }
+
+  return data;
+}
+
 function TranslationError({
   message,
   onRetry,
@@ -129,11 +197,12 @@ function TranslationError({
   onRetry: () => void;
 }) {
   return (
-    <div className="animate-content-reveal mx-auto max-w-md py-8 text-center sm:py-12">
+    <div className="animate-content-reveal mx-auto max-w-md py-8 text-center sm:py-12" role="alert">
       <div className="room-card rounded-[24px] px-5 py-6 sm:px-6 sm:py-8">
         <p className="text-base text-accent-1">{message}</p>
         <button
           onClick={onRetry}
+          aria-label="Retry translation"
           className="mt-4 rounded-lg bg-accent-1 px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-accent-1/90 active:scale-[0.98]"
         >
           Retry translation

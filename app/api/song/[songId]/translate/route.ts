@@ -1,25 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { TranslationState } from "@/lib/types";
-import { getGeniusSong } from "@/lib/providers/genius/song";
-import { getCachedSong, cacheSong } from "@/lib/song-cache";
+import type { SongDocument, TranslationState } from "@/lib/types";
+import { cacheSong } from "@/lib/song-cache";
 import { classifyLines } from "@/lib/language/detect-language";
 import { transliterate } from "@/lib/providers/openai/transliterate";
 import { translate } from "@/lib/providers/openai/translate";
-import { getCached, setCache, getCacheKey } from "@/lib/cache";
+import { getCached, getCacheKey, setCache } from "@/lib/cache";
+import {
+  trackTranslationComplete,
+  trackTranslationError,
+  trackTranslationStart,
+} from "@/lib/analytics";
 
 type RouteContext = { params: Promise<{ songId: string }> };
 
-export async function GET(_request: NextRequest, context: RouteContext) {
+export async function POST(request: NextRequest, context: RouteContext) {
   const { songId } = await context.params;
 
   try {
-    let song = getCachedSong(songId);
-    if (!song) {
-      song = await getGeniusSong(songId);
-      cacheSong(song);
+    const body = (await request.json()) as { song?: unknown };
+    const song = body.song;
+
+    if (!isSongDocument(song)) {
+      return NextResponse.json(
+        { state: "error", message: "Translation failed: Invalid song payload." },
+        { status: 400 }
+      );
     }
 
-    // English songs don't need translation
+    if (song.songId !== songId) {
+      return NextResponse.json(
+        { state: "error", message: "Translation failed: Song ID mismatch." },
+        { status: 400 }
+      );
+    }
+
+    cacheSong(song);
+
     if (song.isEnglish) {
       const state: TranslationState = {
         state: "not_needed",
@@ -28,7 +44,6 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       return NextResponse.json(state);
     }
 
-    // Check cache
     const cacheKey = getCacheKey(songId, song.lyricsHash);
     const cached = getCached(cacheKey);
     if (cached) {
@@ -40,21 +55,27 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       return NextResponse.json(state);
     }
 
-    // Classify lines for mixed-language handling
     const classifiedStanzas = classifyLines(song.stanzas);
 
-    // Run transliteration and translation in parallel
+    trackTranslationStart(songId, song.sourceLanguage);
+    const translationStartTime = Date.now();
+
     const [transliterationResult, translationResult] = await Promise.all([
       transliterate(classifiedStanzas, song.sourceLanguage),
       translate(classifiedStanzas, song.sourceLanguage),
     ]);
 
-    // Cache the results
     setCache(cacheKey, {
       transliteration: transliterationResult,
       translation: translationResult,
       sourceLanguage: song.sourceLanguage,
     });
+
+    trackTranslationComplete(
+      songId,
+      song.sourceLanguage,
+      Date.now() - translationStartTime
+    );
 
     const state: TranslationState = {
       state: "ready",
@@ -67,6 +88,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     const errStack = error instanceof Error ? error.stack : undefined;
     console.error("Translation error:", errMsg);
     if (errStack) console.error(errStack);
+    trackTranslationError(songId, errMsg);
     const state: TranslationState = {
       state: "error",
       message: `Translation failed: ${errMsg}`,
@@ -75,20 +97,23 @@ export async function GET(_request: NextRequest, context: RouteContext) {
   }
 }
 
-/**
- * Merge transliteration and translation results into a single stanza array.
- */
 function mergeResults(
-  transliteration: { stanzaId: string; lines: { lineId: string; mode: string; transliteration?: string }[] }[],
-  translation: { stanzaId: string; lines: { lineId: string; mode: string; translation?: string }[] }[]
+  transliteration: {
+    stanzaId: string;
+    lines: { lineId: string; mode: string; transliteration?: string }[];
+  }[],
+  translation: {
+    stanzaId: string;
+    lines: { lineId: string; mode: string; translation?: string }[];
+  }[]
 ) {
   const translitMap = new Map<string, Map<string, string>>();
-  for (const s of transliteration) {
+  for (const stanza of transliteration) {
     const lineMap = new Map<string, string>();
-    for (const l of s.lines) {
-      if (l.transliteration) lineMap.set(l.lineId, l.transliteration);
+    for (const line of stanza.lines) {
+      if (line.transliteration) lineMap.set(line.lineId, line.transliteration);
     }
-    translitMap.set(s.stanzaId, lineMap);
+    translitMap.set(stanza.stanzaId, lineMap);
   }
 
   return translation.map((stanza) => ({
@@ -100,4 +125,24 @@ function mergeResults(
       translation: line.translation,
     })),
   }));
+}
+
+function isSongDocument(value: unknown): value is SongDocument {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const song = value as Partial<SongDocument>;
+
+  return (
+    typeof song.songId === "string" &&
+    song.provider === "genius" &&
+    typeof song.title === "string" &&
+    typeof song.artist === "string" &&
+    (song.albumArtUrl === null || typeof song.albumArtUrl === "string") &&
+    typeof song.sourceLanguage === "string" &&
+    typeof song.isEnglish === "boolean" &&
+    typeof song.lyricsHash === "string" &&
+    Array.isArray(song.stanzas)
+  );
 }

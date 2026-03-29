@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractLyricsFromEmbedScript } from "@/lib/providers/genius/song";
+import { extractLyricsFromEmbedScript } from "@/lib/providers/genius/embed";
 
 describe("Genius embed lyrics extraction", () => {
   it("extracts readable lyrics from the embed payload", () => {

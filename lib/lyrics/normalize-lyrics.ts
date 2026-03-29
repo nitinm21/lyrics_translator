@@ -1,5 +1,4 @@
 import type { Stanza } from "@/lib/types";
-import crypto from "crypto";
 
 const SECTION_HEADER_REGEX = /^\[([^\]]+)\]$/;
 
@@ -72,5 +71,23 @@ export function normalizeLyrics(rawLyrics: string): Stanza[] {
 }
 
 export function computeLyricsHash(rawLyrics: string): string {
-  return crypto.createHash("sha256").update(rawLyrics).digest("hex").slice(0, 16);
+  let hashA = 0xdeadbeef ^ rawLyrics.length;
+  let hashB = 0x41c6ce57 ^ rawLyrics.length;
+
+  for (let i = 0; i < rawLyrics.length; i++) {
+    const code = rawLyrics.charCodeAt(i);
+    hashA = Math.imul(hashA ^ code, 2654435761);
+    hashB = Math.imul(hashB ^ code, 1597334677);
+  }
+
+  hashA =
+    Math.imul(hashA ^ (hashA >>> 16), 2246822507) ^
+    Math.imul(hashB ^ (hashB >>> 13), 3266489909);
+  hashB =
+    Math.imul(hashB ^ (hashB >>> 16), 2246822507) ^
+    Math.imul(hashA ^ (hashA >>> 13), 3266489909);
+
+  return `${(hashB >>> 0).toString(16).padStart(8, "0")}${(hashA >>> 0)
+    .toString(16)
+    .padStart(8, "0")}`;
 }
