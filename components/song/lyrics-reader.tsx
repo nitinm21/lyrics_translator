@@ -18,7 +18,7 @@ export function LyricsReader({ stanzas, translationStanzas }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <article className="mx-auto max-w-2xl" aria-label="Translated lyrics">
       <div className="space-y-8 sm:space-y-12">
         {stanzas.map((stanza, stanzaIdx) => (
           <div
@@ -57,6 +57,6 @@ export function LyricsReader({ stanzas, translationStanzas }: Props) {
           </div>
         ))}
       </div>
-    </div>
+    </article>
   );
 }

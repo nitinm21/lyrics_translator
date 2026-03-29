@@ -1,4 +1,5 @@
 import { SearchShell } from "@/components/search/search-shell";
+import { FeaturedSongs } from "@/components/search/featured-songs";
 
 export default function HomePage() {
   return (
@@ -15,6 +16,7 @@ export default function HomePage() {
           <div className="mt-8 sm:mt-10">
             <SearchShell />
           </div>
+          <FeaturedSongs />
         </div>
       </div>
     </main>

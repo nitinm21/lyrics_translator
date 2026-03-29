@@ -107,7 +107,7 @@ export function SearchShell() {
 
   return (
     <div ref={shellRef} className="w-full">
-      <form onSubmit={handleSubmit} className="relative">
+      <form onSubmit={handleSubmit} className="relative" role="search">
         <input
           type="text"
           value={query}
@@ -119,6 +119,7 @@ export function SearchShell() {
             }
           }}
           placeholder="Search for a song or artist..."
+          aria-label="Search for a song or artist"
           className="room-input w-full rounded-[20px] px-4 py-3.5 text-base text-primary placeholder:text-secondary/60 transition-shadow focus:outline-none sm:px-5 sm:py-4 sm:text-lg"
         />
         {showRecentSearches ? (

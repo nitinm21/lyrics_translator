@@ -1,5 +1,5 @@
 import type { Stanza, TranslationStanzaResult } from "@/lib/types";
-import { getOpenAIClient } from "./client";
+import { getOpenAIClient, classifyOpenAIError } from "./client";
 import { formatStanzasForLLM, parseLLMResponse } from "./format";
 import { buildTransliterationPrompt } from "@/lib/prompts/transliterate";
 
@@ -17,26 +17,30 @@ export async function transliterate(
   const prompt = buildTransliterationPrompt(sourceLanguage, numberedLyrics);
   let lastContent: string | null = null;
 
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const response = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
-      response_format: { type: "json_object" },
-    });
+  try {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const response = await client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3,
+        response_format: { type: "json_object" },
+      });
 
-    const content = response.choices[0]?.message?.content;
-    if (!content) continue;
-    lastContent = content;
+      const content = response.choices[0]?.message?.content;
+      if (!content) continue;
+      lastContent = content;
 
-    const validated = parseLLMResponse(content);
-    if (validated) {
-      return mergeTransliterationResults(stanzas, validated);
+      const validated = parseLLMResponse(content);
+      if (validated) {
+        return mergeTransliterationResults(stanzas, validated);
+      }
     }
+  } catch (error) {
+    throw new Error(classifyOpenAIError(error));
   }
 
   console.error("Transliteration LLM response could not be parsed:", lastContent?.slice(0, 500));
-  throw new Error("Failed to get valid transliteration after retries");
+  throw new Error("Transliteration returned an unexpected format. Please try again.");
 }
 
 function mergeTransliterationResults(

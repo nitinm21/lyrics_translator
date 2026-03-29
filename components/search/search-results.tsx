@@ -23,7 +23,7 @@ export function SearchResults({
 
   if (error) {
     return (
-      <div className="room-card rounded-[22px] px-5 py-4 text-sm text-accent-1">
+      <div className="room-card rounded-[22px] px-5 py-4 text-sm text-accent-1" role="alert">
         {error}
       </div>
     );

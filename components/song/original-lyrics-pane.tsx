@@ -8,7 +8,7 @@ type Props = {
 
 export function OriginalLyricsPane({ stanzas }: Props) {
   return (
-    <div className="mx-auto max-w-2xl space-y-6 sm:space-y-8">
+    <article className="mx-auto max-w-2xl space-y-6 sm:space-y-8" aria-label="Song lyrics">
       {stanzas.map((stanza) => (
         <div key={stanza.stanzaId}>
           {stanza.sectionLabel && (
@@ -28,6 +28,6 @@ export function OriginalLyricsPane({ stanzas }: Props) {
           </div>
         </div>
       ))}
-    </div>
+    </article>
   );
 }
