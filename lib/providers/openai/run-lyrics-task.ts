@@ -9,6 +9,7 @@ type RunLyricsTaskOptions = {
   sourceLanguage: string;
   taskLabel: string;
   buildPrompt: (sourceLanguage: string, numberedLyrics: string) => string;
+  onlyForeign?: boolean;
 };
 
 export async function runLyricsTask({
@@ -17,8 +18,9 @@ export async function runLyricsTask({
   sourceLanguage,
   taskLabel,
   buildPrompt,
+  onlyForeign = true,
 }: RunLyricsTaskOptions): Promise<LLMStanzaResult[]> {
-  const batches = createLyricBatches(stanzas, true);
+  const batches = createLyricBatches(stanzas, onlyForeign);
   if (batches.length === 0) {
     return [];
   }

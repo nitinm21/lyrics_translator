@@ -8,7 +8,9 @@ Given the following ${sourceLanguage} song lyrics (numbered by stanza ID and lin
 
 Rules:
 - Preserve the exact stanza IDs and line IDs in your output
-- Transliterate each line into Latin script pronunciation
+- Transliterate every non-empty line into a pronunciation guide
+- Never omit a line, even if it is already written in Latin script
+- If the safest transliteration is the original Latin-script text, return it unchanged
 - Keep proper nouns and already-romanized words as-is
 - Do not translate — only transliterate for pronunciation
 - Return ONLY valid JSON, no other text

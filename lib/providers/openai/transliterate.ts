@@ -9,33 +9,20 @@ export async function transliterate(
   sourceLanguage: string
 ): Promise<TranslationStanzaResult[]> {
   const client = getOpenAIClient();
-  const transliterableStanzas = filterTransliterableStanzas(stanzas);
 
   try {
     const results = await runLyricsTask({
       client,
-      stanzas: transliterableStanzas,
+      stanzas,
       sourceLanguage,
       taskLabel: "Transliteration",
       buildPrompt: buildTransliterationPrompt,
+      onlyForeign: false,
     });
     return mergeTransliterationResults(stanzas, results);
   } catch (error) {
     throw wrapOpenAIError(error);
   }
-}
-
-function filterTransliterableStanzas(stanzas: Stanza[]): Stanza[] {
-  return stanzas
-    .map((stanza) => ({
-      ...stanza,
-      lines: stanza.lines.filter(
-        (line) =>
-          line.needsTranslation !== false &&
-          containsNonLatinScript(line.original)
-      ),
-    }))
-    .filter((stanza) => stanza.lines.length > 0);
 }
 
 function mergeTransliterationResults(
@@ -54,7 +41,10 @@ function mergeTransliterationResults(
   return stanzas.map((stanza) => ({
     stanzaId: stanza.stanzaId,
     lines: stanza.lines.map((line) => {
-      const transliteration = resultMap.get(stanza.stanzaId)?.get(line.lineId);
+      const transliteration =
+        resultMap.get(stanza.stanzaId)?.get(line.lineId) ??
+        fallbackLatinTransliteration(line.original);
+
       if (transliteration) {
         return {
           lineId: line.lineId,
@@ -68,4 +58,13 @@ function mergeTransliterationResults(
       };
     }),
   }));
+}
+
+function fallbackLatinTransliteration(original: string): string | undefined {
+  const trimmed = original.trim();
+  if (!trimmed || containsNonLatinScript(trimmed)) {
+    return undefined;
+  }
+
+  return trimmed;
 }
