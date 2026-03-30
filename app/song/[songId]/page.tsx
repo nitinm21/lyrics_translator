@@ -34,9 +34,6 @@ export default function SongPage() {
         if (cancelled) return;
 
         setSong(nextSong);
-        if (nextSong.isEnglish) {
-          setTranslationState({ state: "not_needed", sourceLanguage: "en" });
-        }
       } catch {
         if (!cancelled) {
           setError("Failed to load song. Please try again.");
@@ -55,9 +52,9 @@ export default function SongPage() {
     };
   }, [songId]);
 
-  // Fetch translation immediately after song loads (non-English)
+  // Fetch translation/transliteration immediately after song loads
   useEffect(() => {
-    if (!song || song.isEnglish) return;
+    if (!song) return;
     const currentSong: SongDocument = song;
 
     let cancelled = false;
@@ -122,22 +119,18 @@ export default function SongPage() {
                   <div className="py-8 text-center text-secondary">
                     No lyrics available for this song.
                   </div>
-                ) : song.isEnglish ? (
-                  /* English songs: show original lyrics directly */
-                  <div className="animate-content-reveal">
-                    <OriginalLyricsPane stanzas={song.stanzas} />
-                  </div>
                 ) : translationState?.state === "ready" ? (
-                  /* Translation ready: single pane with transliteration + translation */
                   <LyricsReader
                     stanzas={song.stanzas}
                     translationStanzas={translationState.stanzas}
                   />
+                ) : song.isEnglish ? (
+                  <div className="animate-content-reveal">
+                    <OriginalLyricsPane stanzas={song.stanzas} />
+                  </div>
                 ) : translationState?.state === "pending" ? (
-                  /* Translation loading — compact status rail with live copy */
                   <TranslationLoadingState />
                 ) : translationState?.state === "error" ? (
-                  /* Translation error */
                   <TranslationError
                     message={translationState.message}
                     onRetry={handleRetry}

@@ -36,14 +36,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     cacheSong(song);
 
-    if (song.isEnglish) {
-      const state: TranslationState = {
-        state: "not_needed",
-        sourceLanguage: "en",
-      };
-      return NextResponse.json(state);
-    }
-
     const cacheKey = getCacheKey(songId, song.lyricsHash);
     const cached = getCached(cacheKey);
     if (cached) {
@@ -64,10 +56,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       classifiedStanzas,
       song.sourceLanguage
     );
-    const translationResult = await translate(
-      classifiedStanzas,
-      song.sourceLanguage
-    );
+    const translationResult = song.isEnglish
+      ? []
+      : await translate(classifiedStanzas, song.sourceLanguage);
 
     setCache(cacheKey, {
       transliteration: transliterationResult,

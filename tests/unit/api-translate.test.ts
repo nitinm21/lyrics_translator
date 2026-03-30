@@ -70,10 +70,6 @@ function makeJapaneseSong(): SongDocument {
 
 // Simulate the translate route handler logic
 async function handleTranslateRequest(song: SongDocument): Promise<{ status: number; body: TranslationState }> {
-  if (song.isEnglish) {
-    return { status: 200, body: { state: "not_needed", sourceLanguage: "en" } };
-  }
-
   const cacheKey = `${song.songId}:${song.lyricsHash}`;
   const cached = getCached(cacheKey);
   if (cached) {
@@ -90,7 +86,9 @@ async function handleTranslateRequest(song: SongDocument): Promise<{ status: num
   try {
     const classified = classifyLines(song.stanzas);
     const transliterationResult = await transliterate(classified, song.sourceLanguage);
-    const translationResult = await translate(classified, song.sourceLanguage);
+    const translationResult = song.isEnglish
+      ? []
+      : await translate(classified, song.sourceLanguage);
 
     setCache(cacheKey, {
       transliteration: transliterationResult,
@@ -119,12 +117,27 @@ describe("translate route logic", () => {
     vi.clearAllMocks();
   });
 
-  it("returns not_needed for English songs", async () => {
+  it("runs transliteration but skips translation for English songs", async () => {
     const song = makeEnglishSong();
+    mockGetCached.mockReturnValue(null);
+    mockTransliterate.mockResolvedValue([
+      {
+        stanzaId: "s-1",
+        lines: [
+          {
+            lineId: "s-1-l-1",
+            mode: "translated" as const,
+            transliteration: "HEH-loh wurld",
+          },
+        ],
+      },
+    ]);
+
     const response = await handleTranslateRequest(song);
-    expect(response.body.state).toBe("not_needed");
+
+    expect(response.body.state).toBe("ready");
     expect(mockTranslate).not.toHaveBeenCalled();
-    expect(mockTransliterate).not.toHaveBeenCalled();
+    expect(mockTransliterate).toHaveBeenCalledOnce();
   });
 
   it("returns cached result when available", async () => {
