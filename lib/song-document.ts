@@ -9,6 +9,10 @@ export function buildSongDocument(
   const stanzas = normalizeLyrics(rawLyrics);
   const lyricsHash = computeLyricsHash(rawLyrics);
   const langResult = detectLanguage(rawLyrics);
+  const sourceLanguage =
+    langResult.language !== "unknown"
+      ? langResult.language
+      : metadata.sourceLanguage || "unknown";
 
   return {
     songId: metadata.songId,
@@ -16,7 +20,7 @@ export function buildSongDocument(
     title: metadata.title,
     artist: metadata.artist,
     albumArtUrl: metadata.albumArtUrl,
-    sourceLanguage: langResult.language || metadata.sourceLanguage || "unknown",
+    sourceLanguage,
     isEnglish: langResult.isEnglish,
     lyricsHash,
     stanzas,

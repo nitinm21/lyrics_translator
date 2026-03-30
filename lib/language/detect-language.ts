@@ -11,6 +11,10 @@ export type LanguageDetectionResult = {
 const NON_LATIN_REGEX =
   /[\u0900-\u097F\u0A00-\u0A7F\u0980-\u09FF\u0B00-\u0B7F\u0C00-\u0C7F\u0C80-\u0CFF\u0D00-\u0D7F\u0E00-\u0E7F\u0E80-\u0EFF\u1000-\u109F\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF\u0600-\u06FF\u0750-\u077F\u0590-\u05FF\u0400-\u04FF\u1100-\u11FF]/;
 
+export function containsNonLatinScript(text: string): boolean {
+  return NON_LATIN_REGEX.test(text);
+}
+
 // Common English words for detection
 const ENGLISH_MARKERS =
   /\b(the|and|is|are|was|were|have|has|had|been|will|would|could|should|can|do|does|did|not|but|for|with|this|that|from|they|you|she|her|his|him|our|your|its|all|out|about|just|into|than|then|them|some|when|what|which|who|how|each|make|like|long|look|many|come|over|such|take|only|very|know|say|want|give|most|also|back|after|work|where|well|even|here|must|between|need|mean|through|feel|right|think|call|keep|help|talk|turn|start|might|still|going|never|every|hear|last|always|both|those|once)\b/gi;
@@ -92,7 +96,7 @@ export function classifyLines(stanzas: Stanza[]): Stanza[] {
         return { ...line, lineLanguage: "unknown" as const, needsTranslation: false };
       }
 
-      const hasNonLatin = NON_LATIN_REGEX.test(text);
+      const hasNonLatin = containsNonLatinScript(text);
       const words = text.split(/\s+/).filter((w) => w.length > 0);
       const englishMatches = text.match(ENGLISH_MARKERS);
       const englishCount = englishMatches ? englishMatches.length : 0;

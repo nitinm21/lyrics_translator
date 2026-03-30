@@ -7,7 +7,7 @@ export function getOpenAIClient(): OpenAI {
   if (!_client) {
     _client = new OpenAI({
       apiKey: getOpenAIKey(),
-      timeout: 30_000,
+      timeout: 45_000,
       maxRetries: 1,
     });
   }
@@ -24,6 +24,9 @@ export function classifyOpenAIError(error: unknown): string {
   if (error instanceof OpenAI.AuthenticationError) {
     return "Translation service configuration error. Please contact support.";
   }
+  if (error instanceof OpenAI.APIConnectionTimeoutError) {
+    return "Translation service took too long to respond. Please try again.";
+  }
   if (error instanceof OpenAI.APIConnectionError) {
     return "Could not reach translation service. Please check your connection and try again.";
   }
@@ -37,4 +40,10 @@ export function classifyOpenAIError(error: unknown): string {
     return error.message;
   }
   return "An unexpected translation error occurred.";
+}
+
+export function wrapOpenAIError(error: unknown): Error {
+  return new Error(classifyOpenAIError(error), {
+    cause: error instanceof Error ? error : undefined,
+  });
 }

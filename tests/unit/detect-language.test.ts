@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { detectLanguage, classifyLines } from "@/lib/language/detect-language";
+import {
+  detectLanguage,
+  classifyLines,
+  containsNonLatinScript,
+} from "@/lib/language/detect-language";
 import type { Stanza } from "@/lib/types";
 
 describe("detectLanguage", () => {
@@ -44,6 +48,11 @@ describe("detectLanguage", () => {
   it("returns empty text as English", () => {
     const result = detectLanguage("");
     expect(result.isEnglish).toBe(true);
+  });
+
+  it("detects whether text needs transliteration", () => {
+    expect(containsNonLatinScript("桜の花が咲く")).toBe(true);
+    expect(containsNonLatinScript("Tití me preguntó")).toBe(false);
   });
 });
 

@@ -89,10 +89,8 @@ async function handleTranslateRequest(song: SongDocument): Promise<{ status: num
 
   try {
     const classified = classifyLines(song.stanzas);
-    const [transliterationResult, translationResult] = await Promise.all([
-      transliterate(classified, song.sourceLanguage),
-      translate(classified, song.sourceLanguage),
-    ]);
+    const transliterationResult = await transliterate(classified, song.sourceLanguage);
+    const translationResult = await translate(classified, song.sourceLanguage);
 
     setCache(cacheKey, {
       transliteration: transliterationResult,

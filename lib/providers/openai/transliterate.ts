@@ -1,46 +1,41 @@
 import type { Stanza, TranslationStanzaResult } from "@/lib/types";
-import { getOpenAIClient, classifyOpenAIError } from "./client";
-import { formatStanzasForLLM, parseLLMResponse } from "./format";
+import { getOpenAIClient, wrapOpenAIError } from "./client";
 import { buildTransliterationPrompt } from "@/lib/prompts/transliterate";
+import { runLyricsTask } from "./run-lyrics-task";
+import { containsNonLatinScript } from "@/lib/language/detect-language";
 
 export async function transliterate(
   stanzas: Stanza[],
   sourceLanguage: string
 ): Promise<TranslationStanzaResult[]> {
   const client = getOpenAIClient();
-  const numberedLyrics = formatStanzasForLLM(stanzas, true);
-
-  if (!numberedLyrics.trim()) {
-    return [];
-  }
-
-  const prompt = buildTransliterationPrompt(sourceLanguage, numberedLyrics);
-  let lastContent: string | null = null;
+  const transliterableStanzas = filterTransliterableStanzas(stanzas);
 
   try {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const response = await client.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.3,
-        response_format: { type: "json_object" },
-      });
-
-      const content = response.choices[0]?.message?.content;
-      if (!content) continue;
-      lastContent = content;
-
-      const validated = parseLLMResponse(content);
-      if (validated) {
-        return mergeTransliterationResults(stanzas, validated);
-      }
-    }
+    const results = await runLyricsTask({
+      client,
+      stanzas: transliterableStanzas,
+      sourceLanguage,
+      taskLabel: "Transliteration",
+      buildPrompt: buildTransliterationPrompt,
+    });
+    return mergeTransliterationResults(stanzas, results);
   } catch (error) {
-    throw new Error(classifyOpenAIError(error));
+    throw wrapOpenAIError(error);
   }
+}
 
-  console.error("Transliteration LLM response could not be parsed:", lastContent?.slice(0, 500));
-  throw new Error("Transliteration returned an unexpected format. Please try again.");
+function filterTransliterableStanzas(stanzas: Stanza[]): Stanza[] {
+  return stanzas
+    .map((stanza) => ({
+      ...stanza,
+      lines: stanza.lines.filter(
+        (line) =>
+          line.needsTranslation !== false &&
+          containsNonLatinScript(line.original)
+      ),
+    }))
+    .filter((stanza) => stanza.lines.length > 0);
 }
 
 function mergeTransliterationResults(
@@ -49,7 +44,7 @@ function mergeTransliterationResults(
 ): TranslationStanzaResult[] {
   const resultMap = new Map<string, Map<string, string>>();
   for (const s of llmResults) {
-    const lineMap = new Map<string, string>();
+    const lineMap = resultMap.get(s.stanzaId) ?? new Map<string, string>();
     for (const l of s.lines) {
       lineMap.set(l.lineId, l.text);
     }

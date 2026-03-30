@@ -60,10 +60,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
     trackTranslationStart(songId, song.sourceLanguage);
     const translationStartTime = Date.now();
 
-    const [transliterationResult, translationResult] = await Promise.all([
-      transliterate(classifiedStanzas, song.sourceLanguage),
-      translate(classifiedStanzas, song.sourceLanguage),
-    ]);
+    const transliterationResult = await transliterate(
+      classifiedStanzas,
+      song.sourceLanguage
+    );
+    const translationResult = await translate(
+      classifiedStanzas,
+      song.sourceLanguage
+    );
 
     setCache(cacheKey, {
       transliteration: transliterationResult,
@@ -87,6 +91,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const errMsg = error instanceof Error ? error.message : String(error);
     const errStack = error instanceof Error ? error.stack : undefined;
     console.error("Translation error:", errMsg);
+    const errorDetails = describeErrorForLog(error);
+    if (errorDetails) {
+      console.error("Translation error detail:", errorDetails);
+    }
     if (errStack) console.error(errStack);
     trackTranslationError(songId, errMsg);
     const state: TranslationState = {
@@ -145,4 +153,20 @@ function isSongDocument(value: unknown): value is SongDocument {
     typeof song.lyricsHash === "string" &&
     Array.isArray(song.stanzas)
   );
+}
+
+function describeErrorForLog(error: unknown): string | null {
+  if (!(error instanceof Error)) {
+    return null;
+  }
+
+  const cause = error.cause;
+  if (!(cause instanceof Error)) {
+    return null;
+  }
+
+  const causeStatus = Reflect.get(cause, "status");
+  const status =
+    typeof causeStatus === "number" ? ` status=${String(causeStatus)}` : "";
+  return `${cause.name}: ${cause.message}${status}`;
 }
